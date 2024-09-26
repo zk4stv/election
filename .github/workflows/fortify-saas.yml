@@ -36,7 +36,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use o segredo do GitHub para a senha
-          FOD_PASSWORD: ${{ @Alpha100alpha100 }}
+          FOD_PASSWORD: ${{  }}
 
       # Passo 4: Configuração do valor padrão de FOD_RELEASE
       - name: Set FOD_RELEASE default value
@@ -65,7 +65,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use o segredo do GitHub para a senha
-          FOD_PASSWORD: ${{ @Alpha100alpha100 }}
+          FOD_PASSWORD: @Alpha100alpha100
 
       # Passo 6: Validação de variáveis de ambiente antes do login
       - name: Validate Fortify FoD Login
@@ -88,7 +88,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use o segredo do GitHub para a senha
-          FOD_PASSWORD: ${{ @Alpha100alpha100 }}
+          FOD_PASSWORD: @Alpha100alpha100
 
       # Passo 7: Tentativa de login no Fortify
       - name: Fortify FoD Login
@@ -107,7 +107,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use o segredo do GitHub para a senha
-          FOD_PASSWORD: ${{ @Alpha100alpha100 }}
+          FOD_PASSWORD: @Alpha100alpha100
 
       # Passo 8: Execução da ação Fortify (após login bem-sucedido)
       - name: Run Fortify FoD SAST Scan
@@ -122,4 +122,4 @@ jobs:
           FCLI_CMD: /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin/fcli
           FOD_RELEASE: zk4stv/election:main
           # Use o segredo do GitHub para a senha
-          FOD_PASSWORD: ${{ @Alpha100alpha100 }}
+          FOD_PASSWORD: @Alpha100alpha100
