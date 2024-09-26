@@ -19,34 +19,62 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Fortify CLI
+      - name: Install Fortify CLI from alternative source (manual or package)
         run: |
-          # Baixar o script e verificar o conteúdo antes de executar
-          curl -sSL https://tools.fortify.com/fcli/install -o install_fortify.sh
-
-          # Exibir o script baixado para verificar possíveis erros
-          cat install_fortify.sh
-
-          # Verificar permissões e executar o script
-          chmod +x install_fortify.sh
-          ./install_fortify.sh
+          # Tentar primeiro encontrar o binário da CLI no repositório ou instalar manualmente
+          # Se não conseguir, adicionar uma etapa para falhar graciosamente
+          
+          # Você pode substituir o URL abaixo por um link válido de instalação do Fortify CLI
+          curl -f -sSL https://path.to.alternative.install/fortify-cli.sh -o install_fortify.sh || echo "Erro ao baixar Fortify CLI"
+          
+          # Exibir o script baixado para verificar erros antes de executar
+          if [ -f "install_fortify.sh" ]; then
+            cat install_fortify.sh
+            chmod +x install_fortify.sh
+            ./install_fortify.sh
+          else
+            echo "Não foi possível baixar o script Fortify CLI. Verifique o URL."
+            exit 1
+          fi
 
           # Verificar a versão da CLI
-          fcli --version
+          if command -v fcli &> /dev/null; then
+            fcli --version
+          else
+            echo "Fortify CLI não foi instalada corretamente."
+            exit 1
+          fi
 
       - name: Login to FoD
         run: |
-          # Adicionar depuração para verificar o que está sendo passado
           set -x
+          # Verificar se as variáveis de ambiente estão corretas
+          if [ -z "$FOD_USERNAME" ] || [ -z "$FOD_PASSWORD" ]; then
+            echo "FOD_USERNAME ou FOD_PASSWORD não estão definidos."
+            exit 1
+          fi
+          
+          # Efetuar login no Fortify on Demand
           fcli fod login --tenant preferencial --username $FOD_USERNAME --password $FOD_PASSWORD --url $FOD_URL
           set +x
 
       - name: Run Fortify scan
         run: |
+          # Verificar se fcli está disponível antes de continuar
+          if ! command -v fcli &> /dev/null; then
+            echo "Fortify CLI não está disponível."
+            exit 1
+          fi
+
           # Executar a tradução e criar o relatório FPR
           fcli translate start -bt python-pip -o preferencial.fpr .
 
       - name: Upload results to FoD (opcional)
         run: |
-          # Fazer o upload dos resultados
-          fcli fod upload -r $FOD_RELEASE -a preferencial.fpr
+          # Verificar se o arquivo FPR foi gerado
+          if [ -f "preferencial.fpr" ]; then
+            # Fazer o upload dos resultados
+            fcli fod upload -r $FOD_RELEASE -a preferencial.fpr
+          else
+            echo "Arquivo FPR não encontrado! A análise pode ter falhado."
+            exit 1
