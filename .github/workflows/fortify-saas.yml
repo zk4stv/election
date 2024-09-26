@@ -9,22 +9,22 @@ on:
       - main
 
 jobs:
-  fortify-saas-scan:
+  fortify-sast-scan:
     runs-on: ubuntu-latest
-    
+
     steps:
-      # Checkout the repository
+      # Passo 1: Checkout do repositório
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Setup Java 17 environment
+      # Passo 2: Configuração do ambiente Java 17
       - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # Run Fortify SAST Scan (initial step)
+      # Passo 3: Configuração de variáveis de ambiente e execução do scan
       - name: Run Fortify SAST Scan
         uses: fortify/github-action@a92347297e02391b857e7015792cd1926a4cd418
         with:
@@ -35,38 +35,19 @@ jobs:
           FOD_URL: https://ams.fortify.com
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
-          # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{secrets.FOD_PASSWORD}}
+          # Use o segredo do GitHub para a senha
+          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
 
-      # Run Fortify FoD SAST Scan
-      - name: Run Fortify FoD SAST Scan
-        uses: fortify/github-action/fod-sast-scan@v1.2.2
-        env:
-          JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
-          JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
-          FOD_URL: https://ams.fortify.com
-          FOD_TENANT: dev-gubqx51ndecuf3as
-          FOD_USER: preferencial
-          # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{secrets.FOD_PASSWORD}}
-
-      # Set the FOD_RELEASE default value
+      # Passo 4: Configuração do valor padrão de FOD_RELEASE
       - name: Set FOD_RELEASE default value
         run: |
           export FOD_RELEASE="${APP}:${REL}"
           echo FOD_RELEASE=$FOD_RELEASE >> $GITHUB_ENV
         env:
-          JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
-          JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
-          FOD_URL: https://ams.fortify.com
-          FOD_TENANT: dev-gubqx51ndecuf3as
-          FOD_USER: preferencial
-          # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{secrets.FOD_PASSWORD}}
           APP: zk4stv/election
           REL: main
 
-      # Setup Fortify tools
+      # Passo 5: Instalação de ferramentas Fortify
       - name: Setup Fortify tools
         uses: fortify/github-action/setup@v1.2.2
         with:
@@ -79,15 +60,14 @@ jobs:
           debricked-cli: skip
         env:
           JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
-          JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
           FOD_RELEASE: zk4stv/election:main
           FOD_URL: https://ams.fortify.com
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
-          # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{secrets.FOD_PASSWORD}}
+          # Use o segredo do GitHub para a senha
+          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
 
-      # Fortify login validation
+      # Passo 6: Validação de variáveis de ambiente antes do login
       - name: Validate Fortify FoD Login
         run: |
           if [ -z "$FOD_URL" ]; then
@@ -104,26 +84,42 @@ jobs:
           fi
           echo "All environment variables are set correctly."
         env:
-          JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
-          JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
           FOD_URL: https://ams.fortify.com
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
-          # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{secrets.FOD_PASSWORD}}
+          # Use o segredo do GitHub para a senha
+          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
 
-      # Perform Fortify login and handle errors
+      # Passo 7: Tentativa de login no Fortify
       - name: Fortify FoD Login
         run: |
-          /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin/fcli fod session login --url https://ams.fortify.com -t dev-gubqx51ndecuf3as -u preferencial -p "${{ secrets.FOD_PASSWORD }}"
+          echo "Attempting to log in..."
+          /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin/fcli fod session login \
+            --url https://ams.fortify.com \
+            -t "${{ env.FOD_TENANT }}" \
+            -u "${{ env.FOD_USER }}" \
+            -p "${{ secrets.FOD_PASSWORD }}"
         env:
-          JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
-          JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
           FCLI_INSTALL_DIR: /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=
           FCLI_BIN_DIR: /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin
           FCLI_CMD: /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin/fcli
           FOD_URL: https://ams.fortify.com
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
-          # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{secrets.FOD_PASSWORD}}
+          # Use o segredo do GitHub para a senha
+          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
+
+      # Passo 8: Execução da ação Fortify (após login bem-sucedido)
+      - name: Run Fortify FoD SAST Scan
+        run: |
+          echo "Running FoD SAST Scan..."
+          "${FCLI_CMD}" fod release start-scan \
+            --release-id "${FOD_RELEASE}" \
+            --scan-type "Dynamic" \
+            --assessment-type "Standard"
+        env:
+          FOD_URL: https://ams.fortify.com
+          FCLI_CMD: /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin/fcli
+          FOD_RELEASE: zk4stv/election:main
+          # Use o segredo do GitHub para a senha
+          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
