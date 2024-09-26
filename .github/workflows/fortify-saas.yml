@@ -1,5 +1,3 @@
-curl -sSL -D - https://tools.fortify.com/fcli/install
-
 name: Fortify Scan
 
 on:
@@ -8,10 +6,10 @@ on:
       - main
 
 env:
-  FOD_URL: https://ams.fortify.com  # URL da instância do FoD
-  FOD_USERNAME: preferencial  # Nome de usuário do FoD
-  FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}  # Senha do FoD (armazenada como segredo)
-  FOD_RELEASE: zk4stv/election:main  # Release no Fortify on Demand
+  FOD_URL: https://ams.fortify.com
+  FOD_USERNAME: preferencial
+  FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
+  FOD_RELEASE: zk4stv/election:main
 
 jobs:
   fortify-scan:
@@ -20,7 +18,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Fortify CLI
+      - name: Install Fortify CLI
         run: |
           curl -sSL https://tools.fortify.com/fcli/install | bash
           fcli --version
