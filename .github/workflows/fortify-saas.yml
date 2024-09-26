@@ -1,3 +1,5 @@
+curl -sSL -D - https://tools.fortify.com/fcli/install
+
 name: Fortify Scan
 
 on:
