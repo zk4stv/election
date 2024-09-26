@@ -1,50 +1,34 @@
-name: Fortify SAST Scan
+name: Fortify Scan
 
 on:
   push:
     branches:
       - main
 
+env:
+  FOD_URL: https://ams.fortify.com  # URL da instância do FoD
+  FOD_USERNAME: preferencial  # Nome de usuário do FoD
+  FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}  # Senha do FoD (armazenada como segredo)
+  FOD_RELEASE: zk4stv/election:main
+
 jobs:
-  fortify-sast-scan:
+  fortify-scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Run Fortify SAST Scan
-        uses: fortify/github-action@a92347297e02391b857e7015792cd1926a4cd418
-        env:
-          FOD_URL: https://ams.fortify.com
-          FOD_TOKEN: ${{ secrets.FOD_TOKEN }}
-          FOD_USERNAME: preferencial
-          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
-          FOD_TENANT: dev-gubqx51ndecuf3as
-          APP: zk4stv/election
-          REL: main
-
-      - name: Run FOD SAST Scan
-        uses: fortify/github-action/fod-sast-scan@v1.2.2
-
-      - name: Set FOD Var Defaults
-        uses: fortify/github-action/internal/set-fod-var-defaults@v1.2.2
-
-      - name: Export FOD Release
-        run: |
-          export FOD_RELEASE="${APP}:${REL}"
-          echo "FOD_RELEASE: $FOD_RELEASE"
+        uses: actions/checkout@v3
 
       - name: Setup Fortify
         uses: fortify/github-action/setup@v1.2.2
 
-      - name: Run FOD Login
+      - name: Login to FoD
         uses: fortify/github-action/internal/fod-login@v1.2.2
-        env:
-          FOD_URL: https://ams.fortify.com
-          FOD_TOKEN: ${{ secrets.FOD_TOKEN }}
-          FOD_USERNAME: preferencial
-          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
-          FOD_TENANT: dev-gubqx51ndecuf3as
 
-      - name: Run FOD Scan
-        uses: fortify/github-action/internal/run@v1.2.2
+      - name: Run Fortify scan
+        run: |
+          fcli translate -bt python-pip -o preferencial.fpr .
+
+      - name: Upload results to FoD (opcional)
+        uses: fortify/github-action/fod-upload@v1.2.2
+        with:
+          artifact: preferencial.fpr
