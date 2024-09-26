@@ -1,15 +1,12 @@
-name: Fortify Scan
+name: Fortify SCA Workflow
 
 on:
   push:
     branches:
       - main
-
-env:
-  FOD_URL: https://ams.fortify.com
-  FOD_USERNAME: preferencial
-  FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
-  FOD_RELEASE: zk4stv/election:main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   fortify-scan:
@@ -17,64 +14,49 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      - name: Install Fortify CLI from alternative source (manual or package)
+      - name: Set up Fortify CLI
         run: |
-          # Tentar primeiro encontrar o binário da CLI no repositório ou instalar manualmente
-          # Se não conseguir, adicionar uma etapa para falhar graciosamente
-          
-          # Você pode substituir o URL abaixo por um link válido de instalação do Fortify CLI
-          curl -f -sSL https://path.to.alternative.install/fortify-cli.sh -o install_fortify.sh || echo "Erro ao baixar Fortify CLI"
-          
-          # Exibir o script baixado para verificar erros antes de executar
-          if [ -f "install_fortify.sh" ]; then
+          # Tentar encontrar o binário da Fortify CLI localmente
+          if ! command -v fcli &> /dev/null; then
+            echo "Fortify CLI não encontrada, instalando manualmente."
+            # Download do Fortify CLI de uma URL válida
+            curl -f -sSL https://download-url/fortify-cli.sh -o install_fortify.sh || { echo "Erro ao baixar Fortify CLI"; exit 1; }
+            
+            # Exibir o script baixado para garantir que não há erros
             cat install_fortify.sh
+            
+            # Tornar o script executável e executar a instalação
             chmod +x install_fortify.sh
             ./install_fortify.sh
           else
-            echo "Não foi possível baixar o script Fortify CLI. Verifique o URL."
-            exit 1
+            echo "Fortify CLI já está instalada."
           fi
 
-          # Verificar a versão da CLI
+      - name: Verify Fortify CLI Installation
+        run: |
+          # Verificar se a Fortify CLI foi instalada corretamente
           if command -v fcli &> /dev/null; then
             fcli --version
           else
-            echo "Fortify CLI não foi instalada corretamente."
+            echo "Erro: Fortify CLI não foi instalada corretamente."
             exit 1
           fi
 
-      - name: Login to FoD
+      - name: Run Fortify Scan
         run: |
-          set -x
-          # Verificar se as variáveis de ambiente estão corretas
-          if [ -z "$FOD_USERNAME" ] || [ -z "$FOD_PASSWORD" ]; then
-            echo "FOD_USERNAME ou FOD_PASSWORD não estão definidos."
-            exit 1
-          fi
-          
-          # Efetuar login no Fortify on Demand
-          fcli fod login --tenant preferencial --username $FOD_USERNAME --password $FOD_PASSWORD --url $FOD_URL
-          set +x
+          # Executar a análise Fortify no código do repositório
+          fcli translate -o build_id
+          fcli scan -b build_id -o results.fpr
 
-      - name: Run Fortify scan
+        env:
+          FOD_URL: ${{ secrets.FOD_URL }}
+          FOD_USERNAME: ${{ secrets.FOD_USERNAME }}
+          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
+          FOD_RELEASE: ${{ secrets.FOD_RELEASE }}
+
+      - name: Upload results to Fortify on Demand
         run: |
-          # Verificar se fcli está disponível antes de continuar
-          if ! command -v fcli &> /dev/null; then
-            echo "Fortify CLI não está disponível."
-            exit 1
-          fi
-
-          # Executar a tradução e criar o relatório FPR
-          fcli translate start -bt python-pip -o preferencial.fpr .
-
-      - name: Upload results to FoD (opcional)
-        run: |
-          # Verificar se o arquivo FPR foi gerado
-          if [ -f "preferencial.fpr" ]; then
-            # Fazer o upload dos resultados
-            fcli fod upload -r $FOD_RELEASE -a preferencial.fpr
-          else
-            echo "Arquivo FPR não encontrado! A análise pode ter falhado."
-            exit 1
+          # Submeter os resultados da análise para o Fortify on Demand
+          fcli upload -release ${{ env.FOD_RELEASE }} -f results.fpr
