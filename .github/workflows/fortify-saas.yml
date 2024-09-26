@@ -36,7 +36,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: @Alpha100alpha100
+          FOD_PASSWORD: ${{secrets.FOD_PAT}}
 
       # Run Fortify FoD SAST Scan
       - name: Run Fortify FoD SAST Scan
@@ -48,7 +48,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: @Alpha100alpha100
+          FOD_PASSWORD: ${{secrets.FOD_PAT}}
 
       # Set the FOD_RELEASE default value
       - name: Set FOD_RELEASE default value
@@ -62,7 +62,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: @Alpha100alpha100
+          FOD_PASSWORD: ${{secrets.FOD_PAT}}
           APP: zk4stv/election
           REL: main
 
@@ -85,7 +85,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: @Alpha100alpha100
+          FOD_PASSWORD: ${{secrets.FOD_PAT}}
 
       # Fortify login validation
       - name: Validate Fortify FoD Login
@@ -110,7 +110,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: @Alpha100alpha100
+          FOD_PASSWORD: ${{secrets.FOD_PAT}}
 
       # Perform Fortify login and handle errors
       - name: Fortify FoD Login
