@@ -14,23 +14,39 @@ env:
 jobs:
   fortify-scan:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Install Fortify CLI
         run: |
-          curl -sSL https://tools.fortify.com/fcli/install | bash
+          # Baixar o script e verificar o conteúdo antes de executar
+          curl -sSL https://tools.fortify.com/fcli/install -o install_fortify.sh
+
+          # Exibir o script baixado para verificar possíveis erros
+          cat install_fortify.sh
+
+          # Verificar permissões e executar o script
+          chmod +x install_fortify.sh
+          ./install_fortify.sh
+
+          # Verificar a versão da CLI
           fcli --version
 
       - name: Login to FoD
         run: |
+          # Adicionar depuração para verificar o que está sendo passado
+          set -x
           fcli fod login --tenant preferencial --username $FOD_USERNAME --password $FOD_PASSWORD --url $FOD_URL
+          set +x
 
       - name: Run Fortify scan
         run: |
+          # Executar a tradução e criar o relatório FPR
           fcli translate start -bt python-pip -o preferencial.fpr .
 
       - name: Upload results to FoD (opcional)
         run: |
+          # Fazer o upload dos resultados
           fcli fod upload -r $FOD_RELEASE -a preferencial.fpr
