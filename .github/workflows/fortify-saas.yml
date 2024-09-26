@@ -9,7 +9,7 @@ env:
   FOD_URL: https://ams.fortify.com  # URL da instância do FoD
   FOD_USERNAME: preferencial  # Nome de usuário do FoD
   FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}  # Senha do FoD (armazenada como segredo)
-  FOD_RELEASE: zk4stv/election:main
+  FOD_RELEASE: zk4stv/election:main  # Release no Fortify on Demand
 
 jobs:
   fortify-scan:
@@ -18,17 +18,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Fortify
-        uses: fortify/github-action/setup@v1.2.2
+      - name: Setup Fortify CLI
+        run: |
+          curl -sSL https://tools.fortify.com/fcli/install | bash
+          fcli --version
 
       - name: Login to FoD
-        uses: fortify/github-action/internal/fod-login@v1.2.2
+        run: |
+          fcli fod login --tenant preferencial --username $FOD_USERNAME --password $FOD_PASSWORD --url $FOD_URL
 
       - name: Run Fortify scan
         run: |
-          fcli translate -bt python-pip -o preferencial.fpr .
+          fcli translate start -bt python-pip -o preferencial.fpr .
 
       - name: Upload results to FoD (opcional)
-        uses: fortify/github-action/fod-upload@v1.2.2
-        with:
-          artifact: preferencial.fpr
+        run: |
+          fcli fod upload -r $FOD_RELEASE -a preferencial.fpr
