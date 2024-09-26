@@ -36,7 +36,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
+          FOD_PASSWORD: @Alpha100alpha100
 
       # Run Fortify FoD SAST Scan
       - name: Run Fortify FoD SAST Scan
@@ -48,7 +48,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
+          FOD_PASSWORD: @Alpha100alpha100
 
       # Set the FOD_RELEASE default value
       - name: Set FOD_RELEASE default value
@@ -62,7 +62,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
+          FOD_PASSWORD: @Alpha100alpha100
           APP: zk4stv/election
           REL: main
 
@@ -85,15 +85,24 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
+          FOD_PASSWORD: @Alpha100alpha100
 
       # Fortify login validation
-      - name: Fortify FoD Login
+      - name: Validate Fortify FoD Login
         run: |
           if [ -z "$FOD_URL" ]; then
-            echo "ERROR: Either FOD_CLIENT_ID and FOD_CLIENT_SECRET, or FOD_TENANT, FOD_USER and FOD_PASSWORD environment variables must be set"
-            exit 1
+            echo "ERROR: FOD_URL environment variable must be set"; exit 1;
           fi
+          if [ -z "$FOD_TENANT" ]; then
+            echo "ERROR: FOD_TENANT environment variable must be set"; exit 1;
+          fi
+          if [ -z "$FOD_USER" ]; then
+            echo "ERROR: FOD_USER environment variable must be set"; exit 1;
+          fi
+          if [ -z "$FOD_PASSWORD" ]; then
+            echo "ERROR: FOD_PASSWORD environment variable must be set"; exit 1;
+          fi
+          echo "All environment variables are set correctly."
         env:
           JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
           JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
@@ -101,4 +110,20 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use the GitHub secret for the password
-          FOD_PASSWORD: ${{ secrets.FOD_PASSWORD }}
+          FOD_PASSWORD: @Alpha100alpha100
+
+      # Perform Fortify login and handle errors
+      - name: Fortify FoD Login
+        run: |
+          /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin/fcli fod session login --url https://ams.fortify.com -t dev-gubqx51ndecuf3as -u preferencial -p "${{ secrets.FOD_PASSWORD }}"
+        env:
+          JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
+          JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.12-7/x64
+          FCLI_INSTALL_DIR: /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=
+          FCLI_BIN_DIR: /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin
+          FCLI_CMD: /home/runner/work/_temp/fortify/tools/fcli/aHR0cHM6Ly9naXRodWIuY29tL2ZvcnRpZnkvZmNsaS9yZWxlYXNlcy9kb3dubG9hZC92Mi4zLjAvZmNsaS1saW51eC50Z3o=/bin/fcli
+          FOD_URL: https://ams.fortify.com
+          FOD_TENANT: dev-gubqx51ndecuf3as
+          FOD_USER: preferencial
+          # Use the GitHub secret for the password
+          FOD_PASSWORD: @Alpha100alpha100
