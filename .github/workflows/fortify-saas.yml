@@ -36,7 +36,7 @@ jobs:
           FOD_TENANT: dev-gubqx51ndecuf3as
           FOD_USER: preferencial
           # Use o segredo do GitHub para a senha
-          FOD_PASSWORD: ${{  }}
+          FOD_PASSWORD: @Alpha100alpha100
 
       # Passo 4: Configuração do valor padrão de FOD_RELEASE
       - name: Set FOD_RELEASE default value
